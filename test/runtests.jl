@@ -30,6 +30,15 @@ invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
     @test codeunit(s) == UInt8
     @test codeunit(s,3) == b[3]
 
+    @test Base.print_to_string(s) == "foobar"
+    @test Base.print_to_string(abc) == "abc"
+end
+
+@testset "regular expressions" begin
+    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"]
+end
+
+@testset "miscellaneous" begin
     @test cmp("foobar","bar") == cmp(s,"bar") == -cmp("bar",s) == cmp(s,StringView("bar"))
     @test s == StringView("foobar") == "foobar" == s == "foobar" != StringView("bar")
     @test cmp(abc, "bar") == cmp("abc","bar")
@@ -40,15 +49,12 @@ invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
     @test isascii(s)
     @test !isascii(StringView("fööbār"))
 
-    @test Base.print_to_string(s) == "foobar"
-    @test Base.print_to_string(abc) == "abc"
-
     @test isvalid(s)
     @test isvalid(abc)
     @test !isvalid(invalid)
     @test !invoke(isvalid, Tuple{StringView}, invalid)
-end
 
-@testset "regular expressions" begin
-    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"]
+    for str in (s, abc, invalid)
+        @test hash(s) == hash(String(s))
+    end
 end
