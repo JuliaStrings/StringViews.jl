@@ -67,6 +67,7 @@ Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 
 Base.isvalid(s::DenseStringView) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
+Base.isvalid(s::StringView) = all(isvalid, s)
 Base.isvalid(::Type{String}, s::StringView) = isvalid(s)
 
 function Base.isascii(s::StringView)

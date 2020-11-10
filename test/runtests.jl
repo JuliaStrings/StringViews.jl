@@ -3,6 +3,7 @@ using StringViews, Test
 b = Vector{UInt8}("foobar")
 s = StringView(b)
 abc = StringView(0x61:0x63)
+invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
 
 @testset "Construction/conversion" begin
     @test StringView(s) === s
@@ -41,6 +42,11 @@ abc = StringView(0x61:0x63)
 
     @test Base.print_to_string(s) == "foobar"
     @test Base.print_to_string(abc) == "abc"
+
+    @test isvalid(s)
+    @test isvalid(abc)
+    @test !isvalid(invalid)
+    @test !invoke(isvalid, Tuple{StringView}, invalid)
 end
 
 @testset "regular expressions" begin
