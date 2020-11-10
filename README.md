@@ -13,3 +13,26 @@ have otherwise used `String`.
 (In particular, as much as possible we try to implement efficient copy-free
 `String`-like operations on `StringView`, such as iteration and regular-expression
 searching, as long as the underlying `UInt8` array is a contiguous dense array.)
+
+For example:
+
+```jl
+julia> b = [0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72];
+
+julia> s = StringView(b) # does not make a copy
+"foobar"
+
+julia> collect(eachmatch(r"[aeiou]+", s))
+2-element Array{RegexMatch,1}:
+ RegexMatch("oo")
+ RegexMatch("a")
+
+julia> StringView(@view b[1:3]) # also works for subarrays, with no copy
+"foo"
+
+julia> abc = StringView(0x61:0x63) # and for other array types
+"abc"
+```
+
+Other optimized (copy-free) operations include I/O, hashing, iteration/indexing,
+comparisons, and validation.

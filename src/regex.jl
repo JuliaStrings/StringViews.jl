@@ -69,10 +69,9 @@ struct RegexMatchIterator{T<:DenseStringView}
     string::T
     overlap::Bool
 end
-RegexMatchIterator(regex::Regex, string::T, ovr::Bool=false) where {T<:DenseStringView} = RegexMatchIterator{T}(regex, string, ovr)
 Base.compile(itr::RegexMatchIterator) = (compile(itr.regex); itr)
-Base.eltype(::Type{RegexMatchIterator}) = RegexMatch
-Base.IteratorSize(::Type{RegexMatchIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{<:RegexMatchIterator}) = RegexMatch
+Base.IteratorSize(::Type{<:RegexMatchIterator}) = Base.SizeUnknown()
 
 function Base.iterate(itr::RegexMatchIterator, (offset,prevempty)=(1,false))
     opts_nonempty = UInt32(PCRE.ANCHORED | PCRE.NOTEMPTY_ATSTART)
@@ -109,9 +108,9 @@ Base.eachmatch(re::Regex, str::DenseStringView; overlap = false) =
 
 # copied from julia/base/pcre.jl:
 function PCRE.exec(re, subject::DenseStringView, offset, options, match_data)
-    rc = ccall((:pcre2_match_8, PCRE_LIB), Cint,
+    rc = ccall((:pcre2_match_8, PCRE.PCRE_LIB), Cint,
                 (Ptr{Cvoid}, Ptr{UInt8}, Csize_t, Csize_t, UInt32, Ptr{Cvoid}, Ptr{Cvoid}),
-                re, subject, ncodeunits(subject), offset, options, match_data, get_local_match_context())
+                re, subject, ncodeunits(subject), offset, options, match_data, PCRE.get_local_match_context())
     # rc == -1 means no match, -2 means partial match.
     rc < -2 && error("PCRE.exec error: $(err_message(rc))")
     return rc >= 0

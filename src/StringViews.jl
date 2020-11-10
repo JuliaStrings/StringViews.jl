@@ -80,7 +80,7 @@ write(io::IO, s::StringView) = write(io, s.data)
 print(io::IO, s::StringView) = (write(io, s); nothing)
 
 Base.@propagate_inbounds Base.thisind(s::StringView, i::Int) = Base._thisind_str(s, i)
-Base.@propagate_inbounds Base.nextind(s::String, i::Int) = Base._nextind_str(s, i)
+Base.@propagate_inbounds Base.nextind(s::StringView, i::Int) = Base._nextind_str(s, i)
 Base.isvalid(s::StringView, i::Int) = checkbounds(Bool, s, i) && thisind(s, i) == i
 
 function Base.hash(s::DenseStringView, h::UInt)

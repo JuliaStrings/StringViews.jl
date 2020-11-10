@@ -42,3 +42,7 @@ abc = StringView(0x61:0x63)
     @test Base.print_to_string(s) == "foobar"
     @test Base.print_to_string(abc) == "abc"
 end
+
+@testset "regular expressions" begin
+    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"]
+end
