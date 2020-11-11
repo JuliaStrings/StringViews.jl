@@ -77,7 +77,7 @@ Base.getindex(s::StringView, r::UnitRange{<:Integer}) = s[Int(first(r)):Int(last
     end
     j = nextind(s, j) - 1
     n = j - i + 1
-    ss = _string_n(n)
+    ss = Base._string_n(n)
     GC.@preserve s ss unsafe_copyto!(pointer(ss), pointer(s, i), n)
     return ss
 end

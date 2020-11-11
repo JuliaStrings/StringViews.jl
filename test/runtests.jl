@@ -53,8 +53,17 @@ end
 end
 
 @testset "regular expressions" begin
-    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"] ==
-          [m.match for m in collect(eachmatch(r"[aeiou]+", ss))]
+    for str in (s,ss)
+        @test [m.match for m in collect(eachmatch(r"[aeiou]+", str))] == ["oo", "a"]
+        @test occursin(r"o+", str) && !occursin(r"z+", str)
+        @test startswith(str, r"o+") == (str[1:2] == "oo")
+        @test startswith(str, r"f+") == (str[1:2] == "fo")
+        @test endswith(str, r"[aeiou]") == (str[end] == 'a')
+        @test endswith(str, r"[q-z]") == (str[end] == 'r')
+        @test findnext(r"o+", str, 4) === nothing
+    end
+    @test findnext(r"[aeiou]+", s, 1) == 2:3
+    @test findnext(r"[aeiou]+", ss, 1) == 1:2
 end
 
 @testset "miscellaneous" begin
