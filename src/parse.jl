@@ -108,8 +108,8 @@ function tryparse_internal(::Type{Bool}, sbuff::DenseStringViewAndSub,
     len = endpos - startpos + 1
     p   = pointer(sbuff) + startpos - 1
     GC.@preserve sbuff begin
-        (len == 4) && (0 == Base._memcmp(p, "true", 4)) && (return true)
-        (len == 5) && (0 == Base._memcmp(p, "false", 5)) && (return false)
+        (len == 4) && (0 == _memcmp(p, "true", 4)) && (return true)
+        (len == 5) && (0 == _memcmp(p, "false", 5)) && (return false)
     end
 
     if raise
