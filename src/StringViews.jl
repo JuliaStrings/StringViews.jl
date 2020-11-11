@@ -5,7 +5,7 @@ that provides a string representation of any underlying array of bytes
 
 Unlike Julia's built-in `String` type (which also wraps UTF-8 data), the
 `StringView` type is a copy-free wrap of *any* `AbstractVector{UInt8}`
-instance, and does not take "ownership" or modify the arrray.   Otherwise,
+instance, and does not take "ownership" of or modify the array.   Otherwise,
 a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
 """
@@ -17,7 +17,7 @@ export StringView
 
 `StringView(array)` creates an `AbstractString` representation of
 any `array` of `UInt8` data, interpreted as UTF-8 encoded Unicode.
-It does *not* make a copy of `array`.
+It does *not* make a copy of or modify `array`.
 """
 struct StringView{T} <: AbstractString where {T<:AbstractVector{UInt8}}
     data::T
