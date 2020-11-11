@@ -35,4 +35,5 @@ julia> abc = StringView(0x61:0x63) # and for other array types
 ```
 
 Other optimized (copy-free) operations include I/O, hashing, iteration/indexing,
-comparisons, and validation.
+comparisons, and validation.  Working with a `SubString` of a `StringView` is
+similarly efficient.
