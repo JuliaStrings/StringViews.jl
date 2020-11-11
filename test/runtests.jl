@@ -5,6 +5,7 @@ s = StringView(b)
 ss = SubString(s, 2, 5) # "ooba"
 abc = StringView(0x61:0x63)
 invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
+su = StringView("föôẞαr")
 
 @testset "construction/conversion" begin
     @test StringView(s) === s
@@ -50,6 +51,19 @@ end
     @test cmp("foobar","bar") == cmp(ss,"bar") == -cmp("bar",ss) == cmp(ss,StringView("bar"))
     @test ss == StringView("ooba") == "ooba" == ss == "ooba"
     @test isvalid(ss)
+end
+
+@testset "iteration" begin
+    for str in (s, ss, abc, invalid, su)
+        sS = String(str)
+        @test sS == str
+        @test length(sS) == length(str)
+        @test collect(sS) == collect(str) ==
+              getindex.(sS, eachindex(sS)) == getindex.(str, eachindex(sS))
+        @test collect(eachindex(sS)) == collect(eachindex(str))
+        @test sS[1:end] == str[1:end]
+        @test sS[nextind(sS,1):prevind(sS,end)] == str[nextind(str,1):prevind(str,end)]
+    end
 end
 
 @testset "regular expressions" begin

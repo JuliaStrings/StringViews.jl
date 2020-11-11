@@ -76,10 +76,7 @@ Base.getindex(s::StringView, r::UnitRange{<:Integer}) = s[Int(first(r)):Int(last
         @inbounds isvalid(s, j) || string_index_err(s, j)
     end
     j = nextind(s, j) - 1
-    n = j - i + 1
-    ss = Base._string_n(n)
-    GC.@preserve s ss unsafe_copyto!(pointer(ss), pointer(s, i), n)
-    return ss
+    return StringView(@view s.data[i:j])
 end
 
 Base.length(s::StringView) = length_continued(s, 1, ncodeunits(s), ncodeunits(s))
