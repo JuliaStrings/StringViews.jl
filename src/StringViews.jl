@@ -47,7 +47,7 @@ Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = convert(Ptr{I
 Base.cconvert(::Type{Ptr{UInt8}}, s::SubString{<:DenseStringView}) = s
 Base.cconvert(::Type{Ptr{Int8}}, s::SubString{<:DenseStringView}) = s
 
-Base.sizeof(s::StringView) = sizeof(s.data)
+Base.sizeof(s::StringView) = length(s.data)
 Base.ncodeunits(s::StringView) = length(s.data)
 Base.codeunit(s::StringView) = UInt8
 Base.@propagate_inbounds Base.codeunit(s::StringView, i::Integer) = s.data[i]
@@ -96,6 +96,19 @@ Base.isvalid(s::StringViewAndSub, i::Int) = checkbounds(Bool, s, i) && thisind(s
 function Base.hash(s::DenseStringViewAndSub, h::UInt)
     h += Base.memhash_seed
     ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s, ncodeunits(s), h % UInt32) + h
+end
+
+# each string type must implement its own reverse because it is generally
+# encoding-dependent
+function Base.reverse(s::StringViewAndSub)::String
+    # Read characters forwards from `s` and write backwards to `out`
+    out = Base._string_n(sizeof(s))
+    offs = sizeof(s) + 1
+    for c in s
+        offs -= ncodeunits(c)
+        Base.__unsafe_string!(out, c, offs)
+    end
+    return out
 end
 
 include("decoding.jl")

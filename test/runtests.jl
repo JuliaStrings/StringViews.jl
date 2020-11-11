@@ -96,7 +96,7 @@ end
     @test !isvalid(invalid)
     @test !invoke(isvalid, Tuple{StringView}, invalid)
 
-    for str in (s, abc, invalid, ss)
-        @test hash(str) == hash(String(str))
+    for str in (s, abc, invalid, ss), f in (hash, reverse)
+        @test f(str) == f(String(str))
     end
 end
