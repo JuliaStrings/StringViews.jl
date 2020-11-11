@@ -1,5 +1,7 @@
 # StringViews
 
+[![CI](https://github.com/JuliaStrings/StringViews.jl/workflows/CI/badge.svg)](https://github.com/JuliaStrings/StringViews.jl/actions?query=workflow%3ACI)
+
 This Julia package implements a new type of `AbstractString`, a `StringView`,
 that provides a string representation of any underlying array of bytes
 (any `AbstractVector{UInt8}`), interpreted as UTF-8 encoded Unicode data.
