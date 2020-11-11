@@ -17,7 +17,6 @@ have otherwise used `String`.
 searching, as long as the underlying `UInt8` array is a contiguous dense array.)
 
 For example:
-
 ```jl
 julia> b = [0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72];
 
