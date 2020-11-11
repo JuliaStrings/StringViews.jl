@@ -19,7 +19,7 @@ export StringView
 any `array` of `UInt8` data, interpreted as UTF-8 encoded Unicode.
 It does *not* make a copy of or modify `array`.
 """
-struct StringView{T} <: AbstractString where {T<:AbstractVector{UInt8}}
+struct StringView{T<:AbstractVector{UInt8}} <: AbstractString
     data::T
 end
 
