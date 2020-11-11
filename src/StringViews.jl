@@ -113,5 +113,6 @@ end
 
 include("decoding.jl")
 include("regex.jl")
+include("parse.jl")
 
 end # module

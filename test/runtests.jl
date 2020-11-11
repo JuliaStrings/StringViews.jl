@@ -80,6 +80,15 @@ end
     @test findnext(r"[aeiou]+", ss, 1) == 1:2
 end
 
+@testset "parsing" begin
+    for val in (true, 1234, 1234.5, 1234.5f0, 4.5+3.25im)
+        sval = string(val)
+        for str in (StringView(sval), SubString("foo"*sval*"bar", 4, 3+length(sval)))
+            @test parse(typeof(val), str) === val
+        end
+    end
+end
+
 @testset "miscellaneous" begin
     @test cmp("foobar","bar") == cmp(s,"bar") == -cmp("bar",s) == cmp(s,StringView("bar"))
     @test s == StringView("foobar") == "foobar" == s == "foobar" != StringView("bar")
