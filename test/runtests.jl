@@ -89,6 +89,21 @@ end
     end
 end
 
+@testset "searching" begin
+    for str in (s, ss, abc)
+        sS, n = String(str), lastindex(str)
+        @test startswith(str, "foo") == startswith(sS, "foo")
+        @test endswith(str, "bar") == endswith(sS, "bar")
+        @test replace(str, 'o'=>"xy") == replace(sS, 'o'=>"xy")
+        @test replace(str, ('o','a')=>'x') == replace(sS, ('o','a')=>'x')
+        @test findnext(==('b'), str, 1) === findnext(==('b'), sS, 1)
+        @test findprev(==('b'), str, n) === findprev(==('b'), sS, n)
+        @test findnext(==("ba"), str, 1) === findnext(==("ba"), sS, 1)
+        @test findprev(==("ba"), str, n) === findprev(==("ba"), sS, n)
+    end
+    @test chomp(StringView("foo\n")) == "foo"
+end
+
 @testset "miscellaneous" begin
     @test cmp("foobar","bar") == cmp(s,"bar") == -cmp("bar",s) == cmp(s,StringView("bar"))
     @test s == StringView("foobar") == "foobar" == s == "foobar" != StringView("bar")

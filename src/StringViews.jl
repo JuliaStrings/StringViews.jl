@@ -86,8 +86,8 @@ function Base.isascii(s::StringViewAndSub)
     return true
 end
 
-write(io::IO, s::StringViewAndSub) = write(io, codeunits(s))
-print(io::IO, s::StringViewAndSub) = (write(io, s); nothing)
+Base.write(io::IO, s::StringViewAndSub) = write(io, codeunits(s))
+Base.print(io::IO, s::StringViewAndSub) = (write(io, s); nothing)
 
 Base.@propagate_inbounds Base.thisind(s::StringViewAndSub, i::Int) = Base._thisind_str(s, i)
 Base.@propagate_inbounds Base.nextind(s::StringViewAndSub, i::Int) = Base._nextind_str(s, i)
@@ -114,5 +114,7 @@ end
 include("decoding.jl")
 include("regex.jl")
 include("parse.jl")
+include("util.jl")
+include("search.jl")
 
 end # module
