@@ -3,22 +3,22 @@
 
 import Base.PCRE
 
-function Base.occursin(r::Regex, s::DenseStringView; offset::Integer=0)
+function Base.occursin(r::Regex, s::DenseStringViewAndSub; offset::Integer=0)
     Base.compile(r)
     return PCRE.exec_r(r.regex, s, offset, r.match_options)
 end
 
-function Base.startswith(s::DenseStringView, r::Regex)
+function Base.startswith(s::DenseStringViewAndSub, r::Regex)
     Base.compile(r)
     return PCRE.exec_r(r.regex, s, 0, r.match_options | PCRE.ANCHORED)
 end
 
-function Base.endswith(s::DenseStringView, r::Regex)
+function Base.endswith(s::DenseStringViewAndSub, r::Regex)
     Base.compile(r)
     return PCRE.exec_r(r.regex, s, 0, r.match_options | PCRE.ENDANCHORED)
 end
 
-function Base.match(re::Regex, str::DenseStringView, idx::Integer, add_opts::UInt32=UInt32(0))
+function Base.match(re::Regex, str::DenseStringViewAndSub, idx::Integer, add_opts::UInt32=UInt32(0))
     Base.compile(re)
     opts = re.match_options | add_opts
     matched, data = PCRE.exec_r_data(re.regex, str, idx-1, opts)
@@ -38,9 +38,9 @@ function Base.match(re::Regex, str::DenseStringView, idx::Integer, add_opts::UIn
     return result
 end
 
-Base.findnext(re::Regex, str::DenseStringView, idx::Integer) = _findnext_re(re, str, idx, C_NULL)
+Base.findnext(re::Regex, str::DenseStringViewAndSub, idx::Integer) = _findnext_re(re, str, idx, C_NULL)
 
-function _findnext_re(re::Regex, str::DenseStringView, idx::Integer, match_data::Ptr{Cvoid})
+function _findnext_re(re::Regex, str::DenseStringViewAndSub, idx::Integer, match_data::Ptr{Cvoid})
     if idx > nextind(str,lastindex(str))
         throw(BoundsError())
     end
@@ -64,7 +64,7 @@ function _findnext_re(re::Regex, str::DenseStringView, idx::Integer, match_data:
 end
 
 # copied from Base.RegexMatchIterator
-struct RegexMatchIterator{T<:DenseStringView}
+struct RegexMatchIterator{T<:DenseStringViewAndSub}
     regex::Regex
     string::T
     overlap::Bool
@@ -103,11 +103,11 @@ function Base.iterate(itr::RegexMatchIterator, (offset,prevempty)=(1,false))
     nothing
 end
 
-Base.eachmatch(re::Regex, str::DenseStringView; overlap = false) =
+Base.eachmatch(re::Regex, str::DenseStringViewAndSub; overlap = false) =
     RegexMatchIterator(re, str, overlap)
 
 # copied from julia/base/pcre.jl:
-function PCRE.exec(re, subject::DenseStringView, offset, options, match_data)
+function PCRE.exec(re, subject::DenseStringViewAndSub, offset, options, match_data)
     rc = ccall((:pcre2_match_8, PCRE.PCRE_LIB), Cint,
                 (Ptr{Cvoid}, Ptr{UInt8}, Csize_t, Csize_t, UInt32, Ptr{Cvoid}, Ptr{Cvoid}),
                 re, subject, ncodeunits(subject), offset, options, match_data, PCRE.get_local_match_context())

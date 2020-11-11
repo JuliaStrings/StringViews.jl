@@ -24,27 +24,35 @@ struct StringView{T} <: AbstractString where {T<:AbstractVector{UInt8}}
 end
 
 const DenseStringView = StringView{<:Union{DenseVector{UInt8},<:Base.FastContiguousSubArray{UInt8,1,<:DenseVector{UInt8}}}}
+const StringAndSub = Union{String,SubString{String}}
+const StringViewAndSub = Union{StringView,SubString{<:StringView}}
+const DenseStringViewAndSub = Union{DenseStringView,SubString{<:DenseStringView}}
 
 Base.Vector{UInt8}(s::StringView{Vector{UInt8}}) = s.data
-Base.Vector{UInt8}(s::StringView) = Vector{UInt8}(s.data)
-Base.Array{UInt8}(s::StringView) = Vector{UInt8}(s)
-Base.String(s::StringView) = String(copyto!(Base.StringVector(length(s.data)), s.data))
+Base.Vector{UInt8}(s::StringViewAndSub) = Vector{UInt8}(codeunits(s))
+Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
+Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
 StringView(s::StringView) = s
 StringView(s::String) = StringView(codeunits(s))
 
-Base.Symbol(s::DenseStringView) =
+Base.Symbol(s::DenseStringViewAndSub) =
     return ccall(:jl_symbol_n, Ref{Symbol}, (Ptr{UInt8}, Int), s, ncodeunits(s))
 
 Base.pointer(s::DenseStringView) = pointer(s.data)
 Base.pointer(s::DenseStringView, i::Integer) = pointer(s.data, i)
-Base.unsafe_convert(::Type{Ptr{UInt8}}, s::DenseStringView) = pointer(s.data)
-Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringView) = convert(Ptr{Int8}, pointer(s.data))
+Base.pointer(x::SubString{<:DenseStringView}) = pointer(x.string) + x.offset
+Base.pointer(x::SubString{<:DenseStringView}, i::Integer) = pointer(x.string) + x.offset + (i-1)
+Base.unsafe_convert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = pointer(s)
+Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = convert(Ptr{Int8}, pointer(s))
+Base.cconvert(::Type{Ptr{UInt8}}, s::SubString{<:DenseStringView}) = s
+Base.cconvert(::Type{Ptr{Int8}}, s::SubString{<:DenseStringView}) = s
 
 Base.sizeof(s::StringView) = sizeof(s.data)
 Base.ncodeunits(s::StringView) = length(s.data)
 Base.codeunit(s::StringView) = UInt8
 Base.@propagate_inbounds Base.codeunit(s::StringView, i::Integer) = s.data[i]
 Base.codeunits(s::StringView) = s.data
+Base.codeunits(s::SubString{<:StringView}) = @view s.string.data[1+s.offset:s.offset+s.ncodeunits]
 
 _memcmp(a, b, len) =
     ccall(:memcmp, Cint, (Ptr{UInt8}, Ptr{UInt8}, Csize_t), a, b, len % Csize_t) % Int
@@ -53,40 +61,41 @@ function _cmp(a, b)
     c = _memcmp(a, b, min(al,bl))
     return c < 0 ? -1 : c > 0 ? +1 : cmp(al,bl)
 end
-Base.cmp(a::DenseStringView, b::DenseStringView) = _cmp(a, b)
-Base.cmp(a::DenseStringView, b::String) = _cmp(a, b)
-Base.cmp(a::String, b::DenseStringView) = _cmp(a, b)
-Base.:(==)(s1::StringView, s2::StringView) = s1.data == s2.data
-function Base.:(==)(a::String, b::StringView)
+Base.cmp(a::DenseStringViewAndSub, b::DenseStringViewAndSub) = _cmp(a, b)
+Base.cmp(a::DenseStringViewAndSub, b::StringAndSub) = _cmp(a, b)
+Base.cmp(a::StringAndSub, b::DenseStringViewAndSub) = _cmp(a, b)
+Base.:(==)(s1::StringViewAndSub, s2::StringViewAndSub) = codeunits(s1) == codeunits(s2)
+Base.:(==)(s1::StringAndSub, s2::StringViewAndSub) = codeunits(s1) == codeunits(s2)
+function Base.:(==)(a::StringAndSub, b::DenseStringViewAndSub)
     al = sizeof(a)
     return al == sizeof(b) && 0 == _memcmp(a, b, al)
 end
-Base.:(==)(s1::StringView, s2::String) = s2 == s1
+Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 
-Base.isvalid(s::DenseStringView) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
-Base.isvalid(s::StringView) = all(isvalid, s)
-Base.isvalid(::Type{String}, s::StringView) = isvalid(s)
+Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
+Base.isvalid(s::StringViewAndSub) = all(isvalid, s)
+Base.isvalid(::Type{String}, s::StringViewAndSub) = isvalid(s)
 
-function Base.isascii(s::StringView)
+function Base.isascii(s::StringViewAndSub)
     @inbounds for i = 1:ncodeunits(s)
         codeunit(s, i) >= 0x80 && return false
     end
     return true
 end
 
-write(io::IO, s::StringView) = write(io, s.data)
-print(io::IO, s::StringView) = (write(io, s); nothing)
+write(io::IO, s::StringViewAndSub) = write(io, codeunits(s))
+print(io::IO, s::StringViewAndSub) = (write(io, s); nothing)
 
-Base.@propagate_inbounds Base.thisind(s::StringView, i::Int) = Base._thisind_str(s, i)
-Base.@propagate_inbounds Base.nextind(s::StringView, i::Int) = Base._nextind_str(s, i)
-Base.isvalid(s::StringView, i::Int) = checkbounds(Bool, s, i) && thisind(s, i) == i
+Base.@propagate_inbounds Base.thisind(s::StringViewAndSub, i::Int) = Base._thisind_str(s, i)
+Base.@propagate_inbounds Base.nextind(s::StringViewAndSub, i::Int) = Base._nextind_str(s, i)
+Base.isvalid(s::StringViewAndSub, i::Int) = checkbounds(Bool, s, i) && thisind(s, i) == i
 
-function Base.hash(s::DenseStringView, h::UInt)
+function Base.hash(s::DenseStringViewAndSub, h::UInt)
     h += Base.memhash_seed
-    ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s.data, length(s.data), h % UInt32) + h
+    ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s, ncodeunits(s), h % UInt32) + h
 end
 
 include("decoding.jl")

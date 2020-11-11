@@ -2,10 +2,11 @@ using StringViews, Test
 
 b = Vector{UInt8}("foobar")
 s = StringView(b)
+ss = SubString(s, 2, 5) # "ooba"
 abc = StringView(0x61:0x63)
 invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
 
-@testset "Construction/conversion" begin
+@testset "construction/conversion" begin
     @test StringView(s) === s
     @test Vector{UInt8}(s) === Array{UInt8}(s) === codeunits(s) === b
     @test Vector{UInt8}(StringView(@view b[1:3])) == b[1:3]
@@ -34,8 +35,26 @@ invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
     @test Base.print_to_string(abc) == "abc"
 end
 
+@testset "substrings" begin
+    @test Vector{UInt8}(ss) == Array{UInt8}(ss) == codeunits(ss) == b[2:5]
+    @test codeunits(ss) isa Base.FastContiguousSubArray
+    @test Symbol(ss) == :ooba
+
+    @test pointer(ss) == pointer(b) + 1 == Base.unsafe_convert(Ptr{UInt8}, ss)
+    @test ncodeunits(ss) == sizeof(ss) == length(b)-2
+    @test codeunit(ss) == UInt8
+    @test codeunit(ss,3) == b[4]
+
+    @test Base.print_to_string(ss) == "ooba"
+
+    @test cmp("foobar","bar") == cmp(ss,"bar") == -cmp("bar",ss) == cmp(ss,StringView("bar"))
+    @test ss == StringView("ooba") == "ooba" == ss == "ooba"
+    @test isvalid(ss)
+end
+
 @testset "regular expressions" begin
-    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"]
+    @test [m.match for m in collect(eachmatch(r"[aeiou]+", s))] == ["oo", "a"] ==
+          [m.match for m in collect(eachmatch(r"[aeiou]+", ss))]
 end
 
 @testset "miscellaneous" begin
@@ -54,7 +73,7 @@ end
     @test !isvalid(invalid)
     @test !invoke(isvalid, Tuple{StringView}, invalid)
 
-    for str in (s, abc, invalid)
-        @test hash(s) == hash(String(s))
+    for str in (s, abc, invalid, ss)
+        @test hash(str) == hash(String(str))
     end
 end
