@@ -1,4 +1,4 @@
-# Unicode iteration and decoding for StringView, copied from the corresponding StringView functions in Base
+# Unicode iteration and decoding for StringView, copied from the corresponding String functions in Base
 
 @inline between(b::T, lo::T, hi::T) where {T<:Integer} = (lo ≤ b) & (b ≤ hi)
 
