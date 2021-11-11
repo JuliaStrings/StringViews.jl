@@ -44,8 +44,7 @@ Base.replace(str::DenseStringViewAndSub, pat_repl::Pair{<:Union{Tuple{Vararg{<:A
         count::Integer=typemax(Int)) =
     replace(str, in(first(pat_repl)) => last(pat_repl), count=count)
 
-_pat_replacer(x) = x
-_free_pat_replacer(x) = nothing
+import Base: _pat_replacer, _free_pat_replacer
 
 function Base.replace(str::DenseStringViewAndSub, pat_repl::Pair; count::Integer=typemax(Int))
     pattern, repl = pat_repl

@@ -38,9 +38,9 @@ function Base.match(re::Regex, str::DenseStringViewAndSub, idx::Integer, add_opt
     return result
 end
 
-Base.findnext(re::Regex, str::DenseStringViewAndSub, idx::Integer) = _findnext_re(re, str, idx, C_NULL)
+Base.findnext(re::Regex, str::DenseStringViewAndSub, idx::Integer) = Base._findnext_re(re, str, idx, C_NULL)
 
-function _findnext_re(re::Regex, str::DenseStringViewAndSub, idx::Integer, match_data::Ptr{Cvoid})
+function Base._findnext_re(re::Regex, str::DenseStringViewAndSub, idx::Integer, match_data::Ptr{Cvoid})
     if idx > nextind(str,lastindex(str))
         throw(BoundsError())
     end
