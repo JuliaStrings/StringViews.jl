@@ -44,8 +44,8 @@ Base.pointer(x::SubString{<:DenseStringView}) = pointer(x.string) + x.offset
 Base.pointer(x::SubString{<:DenseStringView}, i::Integer) = pointer(x.string) + x.offset + (i-1)
 Base.unsafe_convert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = pointer(s)
 Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = convert(Ptr{Int8}, pointer(s))
-Base.cconvert(::Type{Ptr{UInt8}}, s::SubString{<:DenseStringView}) = s
-Base.cconvert(::Type{Ptr{Int8}}, s::SubString{<:DenseStringView}) = s
+Base.cconvert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = s
+Base.cconvert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = s
 
 Base.sizeof(s::StringView) = length(s.data)
 Base.ncodeunits(s::StringView) = length(s.data)
