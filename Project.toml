@@ -1,7 +1,7 @@
 name = "StringViews"
 uuid = "354b36f9-a18e-4713-926e-db85100087ba"
 authors = ["Steven G. Johnson <stevenj@alum.mit.edu>"]
-version = "1.0.1"
+version = "1.0.2"
 
 [compat]
 julia = "1.3"
