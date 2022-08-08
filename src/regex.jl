@@ -112,6 +112,6 @@ function PCRE.exec(re, subject::DenseStringViewAndSub, offset, options, match_da
                 (Ptr{Cvoid}, Ptr{UInt8}, Csize_t, Csize_t, UInt32, Ptr{Cvoid}, Ptr{Cvoid}),
                 re, subject, ncodeunits(subject), offset, options, match_data, PCRE.get_local_match_context())
     # rc == -1 means no match, -2 means partial match.
-    rc < -2 && error("PCRE.exec error: $(err_message(rc))")
+    rc < -2 && error("PCRE.exec error: $(PCRE.err_message(rc))")
     return rc >= 0
 end
