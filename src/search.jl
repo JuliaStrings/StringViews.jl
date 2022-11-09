@@ -77,12 +77,30 @@ end
 # The following functions require julia#37283 in Julia 1.6, which
 # allow us to search byte arrays (applied to codeunits(s)).
 @static if VERSION ≥ v"1.6.0-DEV.1341"
-    function Base._searchindex(s::Union{StringViewAndSub,StringAndSub}, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
+    # Split into two identical methods to avoid pirating Base's methods, leading to ~370 invalidations.
+    function Base._searchindex(s::StringViewAndSub, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
+        searchindex_internal(s, t, i)
+    end
+
+    function Base._searchindex(s::Union{StringViewAndSub,StringAndSub}, t::StringViewAndSub, i::Integer)
+        searchindex_internal(s, t, i)
+    end
+
+    function searchindex_internal(s::Union{StringViewAndSub,StringAndSub}, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
         # Check for fast case of a single byte
         lastindex(t) == 1 && return something(findnext(isequal(t[1]), s, i), 0)
         Base._searchindex(codeunits(s), codeunits(t), i)
     end
-    function Base._rsearchindex(s::Union{StringViewAndSub,StringAndSub}, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
+
+    function Base._rsearchindex(s::StringViewAndSub, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
+        rsearchindex_internal(s, t, i)
+    end
+
+    function Base._rsearchindex(s::Union{StringViewAndSub,StringAndSub}, t::StringViewAndSub, i::Integer)
+        rsearchindex_internal(s, t, i)
+    end
+
+    function rsearchindex_internal(s::Union{StringViewAndSub,StringAndSub}, t::Union{StringViewAndSub,StringAndSub}, i::Integer)
         # Check for fast case of a single byte
         if lastindex(t) == 1
             return something(findprev(isequal(t[1]), s, i), 0)
