@@ -35,6 +35,8 @@ Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s
 StringView(s::StringView) = s
 StringView(s::String) = StringView(codeunits(s))
 
+Base.copy(s::StringView) = String(s)
+
 Base.Symbol(s::DenseStringViewAndSub) =
     return ccall(:jl_symbol_n, Ref{Symbol}, (Ptr{UInt8}, Int), s, ncodeunits(s))
 

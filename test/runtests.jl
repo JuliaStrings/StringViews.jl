@@ -15,6 +15,7 @@ su = StringView("föôẞαr")
     @test Vector{UInt8}(abc) == collect(0x61:0x63)
     @test Symbol(s) == :foobar
     @test Symbol(abc) == :abc
+    @test copy(s)::String == "foobar"
 
     @test StringView("foo") isa StringView{Base.CodeUnits{UInt8,String}}
 
