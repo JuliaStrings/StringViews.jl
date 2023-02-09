@@ -133,4 +133,7 @@ end
     for str in (s, abc, invalid, ss, su), f in (hash, reverse)
         @test f(str) == f(String(str))
     end
+
+    # issue #12
+    @test_throws StringIndexError StringView(codeunits("fooα"))[1:5]
 end

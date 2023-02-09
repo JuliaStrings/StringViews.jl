@@ -72,8 +72,8 @@ Base.getindex(s::StringView, r::UnitRange{<:Integer}) = s[Int(first(r)):Int(last
     i, j = first(r), last(r)
     @boundscheck begin
         checkbounds(s, r)
-        @inbounds isvalid(s, i) || string_index_err(s, i)
-        @inbounds isvalid(s, j) || string_index_err(s, j)
+        @inbounds isvalid(s, i) || Base.string_index_err(s, i)
+        @inbounds isvalid(s, j) || Base.string_index_err(s, j)
     end
     j = nextind(s, j) - 1
     return StringView(@view s.data[i:j])
