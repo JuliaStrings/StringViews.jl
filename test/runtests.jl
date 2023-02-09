@@ -82,6 +82,10 @@ end
     end
     @test findnext(r"[aeiou]+", s, 1) == 2:3
     @test findnext(r"[aeiou]+", ss, 1) == 1:2
+
+    sv = StringView(codeunits("foo 1234 bar"))
+    @test match(r"[0-9]+", sv).match.string === sv
+    @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
 end
 
 @testset "parsing" begin

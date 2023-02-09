@@ -25,9 +25,9 @@ julia> s = StringView(b) # does not make a copy
 "foobar"
 
 julia> collect(eachmatch(r"[aeiou]+", s))
-2-element Array{RegexMatch,1}:
- RegexMatch("oo")
- RegexMatch("a")
+2-element Vector{SVRegexMatch{StringView{Vector{UInt8}}}}:
+ SVRegexMatch("oo")
+ SVRegexMatch("a")
 
 julia> StringView(@view b[1:3]) # also works for subarrays, with no copy
 "foo"
