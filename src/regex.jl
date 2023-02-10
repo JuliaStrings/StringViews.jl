@@ -18,7 +18,7 @@ function Base.endswith(s::DenseStringViewAndSub, r::Regex)
     return PCRE.exec_r(r.regex, s, 0, r.match_options | PCRE.ENDANCHORED)
 end
 
-function Base.match(re::Regex, str::DenseStringViewAndSub, idx::Integer, add_opts::UInt32=UInt32(0))
+function Base.match(re::Regex, str::T, idx::Integer, add_opts::UInt32=UInt32(0)) where {T<:DenseStringViewAndSub}
     Base.compile(re)
     opts = re.match_options | add_opts
     matched, data = PCRE.exec_r_data(re.regex, str, idx-1, opts)
@@ -29,7 +29,7 @@ function Base.match(re::Regex, str::DenseStringViewAndSub, idx::Integer, add_opt
     n = div(PCRE.ovec_length(data), 2) - 1
     p = PCRE.ovec_ptr(data)
     mat = SubString(str, unsafe_load(p, 1)+1, prevind(str, unsafe_load(p, 2)+1))
-    cap = Union{Nothing,SubString{String}}[unsafe_load(p,2i+1) == PCRE.UNSET ? nothing :
+    cap = Union{Nothing,SubString{T}}[unsafe_load(p,2i+1) == PCRE.UNSET ? nothing :
                                            SubString(str, unsafe_load(p,2i+1)+1,
                                            prevind(str, unsafe_load(p,2i+2)+1)) for i=1:n]
     off = Int[ unsafe_load(p,2i+1)+1 for i=1:n ]
@@ -185,7 +185,7 @@ function Base.getindex(m::SVRegexMatch, name::Union{AbstractString,Symbol})
 end
 
 Base.haskey(m::SVRegexMatch, idx::Integer) = idx in eachindex(m.captures)
-function haskey(m::SVRegexMatch, name::Union{AbstractString,Symbol})
+function Base.haskey(m::SVRegexMatch, name::Union{AbstractString,Symbol})
     idx = PCRE.substring_number_from_name(m.regex.regex, name)
     return idx > 0
 end

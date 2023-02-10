@@ -88,6 +88,18 @@ end
     @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
 end
 
+@testset "named subpatterns" begin
+    m = match(r"(?<a>.)(.)(?<b>.)", StringView(codeunits("xyz")))
+    @test haskey(m, :a)
+    @test haskey(m, 2)
+    @test haskey(m, "b")
+    @test !haskey(m, "foo")
+    @test (m[:a], m[2], m["b"]) == ("x", "y", "z")
+    @test sprint(show, m) == "SVRegexMatch(\"xyz\", a=\"x\", 2=\"y\", b=\"z\")"
+    @test keys(m) == ["a", 2, "b"]
+end
+
+
 @testset "parsing" begin
     for val in (true, 1234, 1234.5, 1234.5f0, 4.5+3.25im)
         sval = string(val)
