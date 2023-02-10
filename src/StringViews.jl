@@ -42,7 +42,7 @@ StringView(s::StringView) = s
 StringView(s::String) = StringView(codeunits(s))
 
 # iobuffer constructor (note that buf.data is always 1-based)
-StringView(buf::IOBuffer, r::AbstractRange{<:Integer}=Base.OneTo(buf.ptr-1)) =
+StringView(buf::IOBuffer, r::OrdinalRange{<:Integer,<:Integer}=Base.OneTo(buf.ptr-1)) =
     StringView(@view buf.data[r])
 
 Base.copy(s::StringView) = StringView(copy(s.data))

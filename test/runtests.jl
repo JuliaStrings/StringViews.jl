@@ -22,8 +22,8 @@ su = StringView("föôẞαr")
 
     buf = IOBuffer()
     write(buf, s)
-    @test StringView(buf) == s
-    @test StringView(buf, 3:5) == "oba"
+    @test StringView(buf) == s == StringView(buf, 0x01:0x06)
+    @test StringView(buf, 3:5) == "oba" == StringView(buf, 0x03:0x01:0x05)
     write(buf, "baz")
     @test StringView(buf) == s * "baz"
     @test String(take!(buf)) == s * "baz"
