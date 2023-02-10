@@ -20,6 +20,16 @@ su = StringView("föôẞαr")
     @test c == "foobar"
     @test c.data !== s.data
 
+    buf = IOBuffer()
+    write(buf, s)
+    @test StringView(buf) == s
+    @test StringView(buf, 3:5) == "oba"
+    write(buf, "baz")
+    @test StringView(buf) == s * "baz"
+    @test String(take!(buf)) == s * "baz"
+    @test StringView(buf) == ""
+    @test_throws BoundsError StringView(buf, 3:4)
+
     @test StringView("foo") isa StringView{Base.CodeUnits{UInt8,String}}
 
     @test s isa StringViews.DenseStringView
