@@ -8,7 +8,9 @@ that provides a string representation of any underlying array of bytes
 
 Unlike Julia's built-in `String` type (which also wraps UTF-8 data), the
 `StringView` type is a copy-free wrap of *any* `AbstractVector{UInt8}`
-instance, and does not take "ownership" of or modify the array.   Otherwise,
+instance, and does not take "ownership" of or modify the array.
+You can also use `StringView(buf)` with a `buf::IOBuffer`, as
+a non-destructive alternative to `String(take!(buf))`.  Otherwise,
 a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
 
@@ -34,6 +36,25 @@ julia> StringView(@view b[1:3]) # also works for subarrays, with no copy
 
 julia> abc = StringView(0x61:0x63) # and for other array types
 "abc"
+```
+
+Or, with an `IOBuffer`:
+
+```jl
+julia> buf = IOBuffer();
+
+julia> write(buf, b);
+
+julia> print(buf, "baz")
+
+julia> StringView(buf) # does not modify buf
+"foobarbaz"
+
+julia> String(take!(buf)) # clears buf
+"foobarbaz"
+
+julia> StringView(buf) # now empty
+""
 ```
 
 Other optimized (copy-free) operations include I/O, hashing, iteration/indexing,
