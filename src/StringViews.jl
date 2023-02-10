@@ -10,7 +10,7 @@ a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
 """
 module StringViews
-export StringView
+export StringView, SVRegexMatch
 
 """
     StringView{T<:AbstractVector{UInt8}} <: AbstractString
