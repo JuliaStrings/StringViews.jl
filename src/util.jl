@@ -39,7 +39,7 @@ end
 Base.replace(str::DenseStringViewAndSub, pat_repl::Pair{<:AbstractChar}; count::Integer=typemax(Int)) =
     replace(str, isequal(first(pat_repl)) => last(pat_repl); count=count)
 
-Base.replace(str::DenseStringViewAndSub, pat_repl::Pair{<:Union{Tuple{Vararg{<:AbstractChar}},
+Base.replace(str::DenseStringViewAndSub, pat_repl::Pair{<:Union{Tuple{Vararg{AbstractChar}},
                                             AbstractVector{<:AbstractChar},Set{<:AbstractChar}}};
         count::Integer=typemax(Int)) =
     replace(str, in(first(pat_repl)) => last(pat_repl), count=count)
