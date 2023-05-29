@@ -69,7 +69,7 @@ struct RegexMatchIterator{T<:DenseStringViewAndSub}
     string::T
     overlap::Bool
 end
-Base.compile(itr::RegexMatchIterator) = (compile(itr.regex); itr)
+Base.compile(itr::RegexMatchIterator) = (Base.compile(itr.regex); itr)
 Base.eltype(::Type{RegexMatchIterator{T}}) where {T<:DenseStringView} = SVRegexMatch{T}
 Base.eltype(::Type{RegexMatchIterator{SubString{T}}}) where {T<:DenseStringView} = SVRegexMatch{T}
 Base.IteratorSize(::Type{<:RegexMatchIterator}) = Base.SizeUnknown()
