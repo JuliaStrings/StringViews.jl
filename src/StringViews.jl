@@ -87,9 +87,12 @@ Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 
-Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
-Base.isvalid(s::StringViewAndSub) = all(isvalid, s)
-Base.isvalid(::Type{String}, s::StringViewAndSub) = isvalid(s)
+if VERSION < v"1.10.0-DEV.1007" # JuliaLang/julia#47880
+    Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
+    Base.isvalid(s::StringViewAndSub) = all(isvalid, s)
+    Base.isvalid(::Type{String}, s::StringViewAndSub) = isvalid(s)
+# else Julia 1.10's native UTF-8 validation should work for StringView
+end
 
 function Base.isascii(s::StringViewAndSub)
     @inbounds for i = 1:ncodeunits(s)
