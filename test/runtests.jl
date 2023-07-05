@@ -144,8 +144,10 @@ end
     @test replace(StringView(b"abcd"), r"[bc]?" => "^") == "^a^^d^"
     @test replace(StringView(b"a"), 'a' => typeof) == "Char"
     @test replace(StringView(b"The foxes."), r"fox(es)?" => s"bus\1") == "The buses."
-    @test replace(StringView(b"foobarbaz"), "oo" => "zz", "ar" => "zz", "z" => "m") == "fzzbzzbam"
-    @test replace(StringView(b"foobar"), 'o' => '0', "" => "") == "f00bar"
+    if VERSION ≥ v"1.7" # for multiple replacements
+        @test replace(StringView(b"foobarbaz"), "oo" => "zz", "ar" => "zz", "z" => "m") == "fzzbzzbam"
+        @test replace(StringView(b"foobar"), 'o' => '0', "" => "") == "f00bar"
+    end
 end
 
 @testset "miscellaneous" begin
