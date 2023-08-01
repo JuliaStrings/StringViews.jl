@@ -10,6 +10,9 @@ a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
 """
 module StringViews
+
+using UnsafeArrays: UnsafeArray
+
 export StringView, SVRegexMatch
 
 """
@@ -40,6 +43,12 @@ Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
 Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
 StringView(s::StringView) = s
 StringView(s::String) = StringView(codeunits(s))
+
+function StringViews.StringView(cstr::Cstring)
+    ptr = convert(Ptr{UInt8}, cstr)
+    len = findfirst(i -> unsafe_load(ptr, i) == 0x00, 1:typemax(Int)) - 1
+    return StringView(UnsafeArray(ptr, (len,)))
+end
 
 # iobuffer constructor (note that buf.data is always 1-based)
 StringView(buf::IOBuffer, r::OrdinalRange{<:Integer,<:Integer}=Base.OneTo(buf.ptr-1)) =
