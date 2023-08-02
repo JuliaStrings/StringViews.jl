@@ -9,6 +9,9 @@ su = StringView("föôẞαr")
 
 @testset "construction/conversion" begin
     @test StringView(s) === s
+    @test StringView{Vector{UInt8}}(s) === s
+    @test StringView{Vector{UInt8}}(b) === s
+    @test abc == StringView{Vector{UInt8}}(abc) !== abc
     @test Vector{UInt8}(s) === Array{UInt8}(s) === codeunits(s) === b
     @test Vector{UInt8}(StringView(@view b[1:3])) == b[1:3]
     @test codeunits(String(s)) == s.data

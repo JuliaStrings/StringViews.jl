@@ -39,6 +39,7 @@ Base.Vector{UInt8}(s::StringViewAndSub) = Vector{UInt8}(codeunits(s))
 Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
 Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
 StringView(s::StringView) = s
+StringView{T}(s::StringView) where {T <: AbstractVector{UInt8}} = StringView{T}(convert(T, s.data))
 StringView(s::String) = StringView(codeunits(s))
 
 # iobuffer constructor (note that buf.data is always 1-based)
