@@ -45,6 +45,10 @@ su = StringView("föôẞαr")
     @test pointer(s, 3) == pointer(b, 3)
     @test_throws MethodError pointer(abc)
 
+    @test pointer(s) == Base.unsafe_convert(Cstring, Base.cconvert(Cstring, s))
+    @test (@ccall strlen(s::Cstring)::Csize_t) == 6
+    @test (@allocated @ccall strlen(s::Cstring)::Csize_t) == 16
+
     @test ncodeunits(s) == sizeof(s) == length(b)
     @test codeunit(s) == UInt8
     @test codeunit(s,3) == b[3]
