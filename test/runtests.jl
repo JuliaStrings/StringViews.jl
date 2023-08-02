@@ -9,6 +9,9 @@ su = StringView("föôẞαr")
 
 @testset "construction/conversion" begin
     @test StringView(s) === s
+    @test StringView{Vector{UInt8}}(s) === s
+    @test StringView{Vector{UInt8}}(b) === s
+    @test abc == StringView{Vector{UInt8}}(abc) !== abc
     @test Vector{UInt8}(s) === Array{UInt8}(s) === codeunits(s) === b
     @test Vector{UInt8}(StringView(@view b[1:3])) == b[1:3]
     @test codeunits(String(s)) == s.data
@@ -41,6 +44,10 @@ su = StringView("föôẞαr")
     @test Base.unsafe_convert(Ptr{Int8}, s) == Ptr{Int8}(pointer(s))
     @test pointer(s, 3) == pointer(b, 3)
     @test_throws MethodError pointer(abc)
+
+    @test pointer(s) == Base.unsafe_convert(Cstring, Base.cconvert(Cstring, s))
+    @test (@ccall strlen(s::Cstring)::Csize_t) == 6
+    @test (@allocated @ccall strlen(s::Cstring)::Csize_t) == 16
 
     @test ncodeunits(s) == sizeof(s) == length(b)
     @test codeunit(s) == UInt8
