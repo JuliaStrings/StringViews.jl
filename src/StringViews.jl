@@ -87,6 +87,7 @@ Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 Base.one(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
+Base.oneunit(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
 
 if VERSION < v"1.10.0-DEV.1007" # JuliaLang/julia#47880
     Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
