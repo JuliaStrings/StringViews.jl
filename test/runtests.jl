@@ -159,6 +159,7 @@ end
     @test Base.typemin(s) == ""
 
     @test one(s) == one(typeof(s)) == typemin(s) == ""
+    @test oneunit(s) == oneunit(typeof(s)) == one(s) == ""
 
     @test isascii(s)
     @test !isascii(StringView("fööbār"))
