@@ -58,6 +58,7 @@ Base.unsafe_convert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = pointer(s)
 Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = convert(Ptr{Int8}, pointer(s))
 Base.cconvert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = s
 Base.cconvert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = s
+Base.convert(::Type{T}, s::StringView{T}) where {T<:AbstractVector{UInt8}} = s.data
 
 Base.sizeof(s::StringView) = length(s.data)
 Base.ncodeunits(s::StringView) = length(s.data)
@@ -85,9 +86,9 @@ end
 Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
+Base.typemin(::Type{StringView{Base.CodeUnits{UInt8, String}}}) = StringView("")
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 Base.one(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
-Base.oneunit(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
 
 if VERSION < v"1.10.0-DEV.1007" # JuliaLang/julia#47880
     Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0

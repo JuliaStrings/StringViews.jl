@@ -157,9 +157,11 @@ end
 
     @test Base.typemin(s) isa StringView{Vector{UInt8}}
     @test Base.typemin(s) == ""
-
     @test one(s) == one(typeof(s)) == typemin(s) == ""
     @test oneunit(s) == oneunit(typeof(s)) == one(s) == ""
+    @test one(su) == one(typeof(su)) == typemin(su) == ""
+    @test oneunit(su) == oneunit(typeof(su)) == one(su) == ""
+
 
     @test isascii(s)
     @test !isascii(StringView("fööbār"))
