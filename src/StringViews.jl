@@ -39,6 +39,7 @@ Base.Vector{UInt8}(s::StringViewAndSub) = Vector{UInt8}(codeunits(s))
 Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
 Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
 StringView(s::StringView) = s
+StringView{S}(s::StringView{S}) where {S<:AbstractVector{UInt8}} = s
 StringView(s::String) = StringView(codeunits(s))
 
 # iobuffer constructor (note that buf.data is always 1-based)
@@ -58,7 +59,6 @@ Base.unsafe_convert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = pointer(s)
 Base.unsafe_convert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = convert(Ptr{Int8}, pointer(s))
 Base.cconvert(::Type{Ptr{UInt8}}, s::DenseStringViewAndSub) = s
 Base.cconvert(::Type{Ptr{Int8}}, s::DenseStringViewAndSub) = s
-Base.convert(::Type{T}, s::StringView{T}) where {T<:AbstractVector{UInt8}} = s.data
 
 Base.sizeof(s::StringView) = length(s.data)
 Base.ncodeunits(s::StringView) = length(s.data)
