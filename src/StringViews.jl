@@ -39,6 +39,7 @@ Base.Vector{UInt8}(s::StringViewAndSub) = Vector{UInt8}(codeunits(s))
 Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
 Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
 StringView(s::StringView) = s
+StringView{S}(s::StringView{S}) where {S<:AbstractVector{UInt8}} = s
 StringView(s::String) = StringView(codeunits(s))
 
 # iobuffer constructor (note that buf.data is always 1-based)
@@ -85,7 +86,9 @@ end
 Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
+Base.typemin(::Type{StringView{Base.CodeUnits{UInt8, String}}}) = StringView("")
 Base.typemin(::T) where {T<:StringView} = typemin(T)
+Base.one(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
 
 if VERSION < v"1.10.0-DEV.1007" # JuliaLang/julia#47880
     Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
