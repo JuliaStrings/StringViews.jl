@@ -96,6 +96,10 @@ end
     sv = StringView(codeunits("foo 1234 bar"))
     @test match(r"[0-9]+", sv).match.string === sv
     @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
+
+    # Regex match of substring of stringview
+    strv = only(match(r"^([a-z]+)$", SubString(StringView((b"abc")))))
+    @test typeof(strv) == SubString{StringView{typeof(b"abc")}}
 end
 
 @testset "named subpatterns" begin

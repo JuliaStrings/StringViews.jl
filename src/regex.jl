@@ -28,8 +28,9 @@ function Base.match(re::Regex, str::T, idx::Integer, add_opts::UInt32=UInt32(0))
     end
     n = div(PCRE.ovec_length(data), 2) - 1
     p = PCRE.ovec_ptr(data)
-    mat = SubString(str, unsafe_load(p, 1)+1, prevind(str, unsafe_load(p, 2)+1))
-    cap = Union{Nothing,SubString{T}}[unsafe_load(p,2i+1) == PCRE.UNSET ? nothing :
+    SS = T <: SubString ? T : SubString{T}
+    mat = SubString(str, unsafe_load(p, 1)+1, prevind(str, unsafe_load(p, 2)+1))::SS
+    cap = Union{Nothing,SS}[unsafe_load(p,2i+1) == PCRE.UNSET ? nothing :
                                            SubString(str, unsafe_load(p,2i+1)+1,
                                            prevind(str, unsafe_load(p,2i+2)+1)) for i=1:n]
     off = Int[ unsafe_load(p,2i+1)+1 for i=1:n ]
