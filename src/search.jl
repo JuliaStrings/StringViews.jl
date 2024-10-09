@@ -1,5 +1,7 @@
 # optimized string routines copied from julia/base/strings/search.jl
 
+nothing_sentinel(x) = iszero(x) ? nothing : x
+
 function Base.findnext(pred::Base.Fix2{<:Union{typeof(isequal),typeof(==)},<:AbstractChar},
                   s::StringViewAndSub, i::Integer)
     if i < 1 || i > sizeof(s)
@@ -8,7 +10,7 @@ function Base.findnext(pred::Base.Fix2{<:Union{typeof(isequal),typeof(==)},<:Abs
     end
     @inbounds isvalid(s, i) || Base.string_index_err(s, i)
     c = pred.x
-    c ≤ '\x7f' && return Base.nothing_sentinel(Base._search(s, c % UInt8, i))
+    c ≤ '\x7f' && return nothing_sentinel(Base._search(s, c % UInt8, i))
     while true
         i = Base._search(s, Base.first_utf8_byte(c), i)
         i == 0 && return nothing
@@ -42,7 +44,7 @@ end
 function Base.findprev(pred::Base.Fix2{<:Union{typeof(isequal),typeof(==)},<:AbstractChar},
                   s::StringViewAndSub, i::Integer)
     c = pred.x
-    c ≤ '\x7f' && return Base.nothing_sentinel(Base._rsearch(s, c % UInt8, i))
+    c ≤ '\x7f' && return nothing_sentinel(Base._rsearch(s, c % UInt8, i))
     b = Base.first_utf8_byte(c)
     while true
         i = Base._rsearch(s, b, i)
