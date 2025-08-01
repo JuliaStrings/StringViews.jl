@@ -22,6 +22,7 @@ jobs:
         version:
           - "1.6"  # earliest supported release
           - "1"    # Latest Release
+          - "nightly" # test on nightly since we use a lot of internals that might break
         os:
           - ubuntu-latest
           - macOS-latest
