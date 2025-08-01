@@ -114,8 +114,12 @@ Base.@propagate_inbounds Base.nextind(s::StringViewAndSub, i::Int) = Base._nexti
 Base.isvalid(s::StringViewAndSub, i::Int) = checkbounds(Bool, s, i) && thisind(s, i) == i
 
 function Base.hash(s::DenseStringViewAndSub, h::UInt)
-    h += Base.memhash_seed
-    ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s, ncodeunits(s), h % UInt32) + h
+    @static if isdefined(Base, :hash_bytes)
+        GC.@preserve s Base.hash_bytes(pointer(s), sizeof(s), UInt64(h), Base.HASH_SECRET) % UInt
+    else
+        h += Base.memhash_seed
+        ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s, ncodeunits(s), h % UInt32) + h
+    end
 end
 
 # each string type must implement its own reverse because it is generally
