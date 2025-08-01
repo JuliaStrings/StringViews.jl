@@ -115,7 +115,7 @@ Base.isvalid(s::StringViewAndSub, i::Int) = checkbounds(Bool, s, i) && thisind(s
 
 function Base.hash(s::DenseStringViewAndSub, h::UInt)
     @static if isdefined(Base, :hash_bytes)
-        GC.@preserve s hash_bytes(pointer(s), sizeof(s), UInt64(h), Base.HASH_SECRET) % UInt
+        GC.@preserve s Base.hash_bytes(pointer(s), sizeof(s), UInt64(h), Base.HASH_SECRET) % UInt
     else
         h += Base.memhash_seed
         ccall(Base.memhash, UInt, (Ptr{UInt8}, Csize_t, UInt32), s, ncodeunits(s), h % UInt32) + h
