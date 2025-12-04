@@ -142,6 +142,11 @@ end
         pat = r"(\.[\d]{3})\d+" => s"\g<1>"
         @test replace(String(copy(v)), pat) == replace(StringView(v), pat)
     end
+
+    @test findfirst(==('ø'), StringView("abc")) === nothing
+    @test findfirst(==('ø'), StringView("abæø")) == 5
+    @test findlast(==('ø'), StringView("abc")) === nothing
+    @test findlast(==('ø'), StringView("abæø")) == 5
 end
 
 @testset "replace" begin
