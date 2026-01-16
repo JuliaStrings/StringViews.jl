@@ -1,4 +1,5 @@
-using StringViews, Test
+using Test
+using StringViews: StringViews, StringView, SVRegexMatch
 
 b = Vector{UInt8}("foobar")
 s = StringView(b)
