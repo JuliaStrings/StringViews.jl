@@ -129,6 +129,7 @@ end
         sS, n = String(str), lastindex(str)
         @test startswith(str, "foo") == startswith(sS, "foo")
         @test startswith("foobarz", str) == startswith("foobarz", sS)
+        @test startswith("foo", str) == startswith("foo", sS)
         @test endswith(str, "bar") == endswith(sS, "bar")
         @test endswith("abcfoobar", str) == endswith("abcfoobar", sS)
         @test replace(str, 'o'=>"xy") == replace(sS, 'o'=>"xy")
