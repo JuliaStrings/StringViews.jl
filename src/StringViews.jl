@@ -12,7 +12,7 @@ have otherwise used `String`.
 module StringViews
 
 # no longer needed after https://github.com/JuliaLang/julia/pull/60526
-if !isdefined(Base, StringView)
+if !isdefined(Base, :StringView)
 
 export StringView, SVRegexMatch
 
