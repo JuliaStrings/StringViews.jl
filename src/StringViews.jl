@@ -10,6 +10,10 @@ a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
 """
 module StringViews
+
+# no longer needed after https://github.com/JuliaLang/julia/pull/60526
+if !isdefined(Base, :StringView)
+
 export StringView, SVRegexMatch
 
 """
@@ -140,5 +144,7 @@ include("regex.jl")
 include("parse.jl")
 include("util.jl")
 include("search.jl")
+
+end
 
 end # module
