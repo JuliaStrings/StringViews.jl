@@ -1,7 +1,20 @@
 # other optimized string routines copied from julia/base/strings/util.jl
 
-function Base.startswith(a::Union{DenseStringViewAndSub,StringAndSub},
-                         b::Union{DenseStringViewAndSub,StringAndSub})
+function Base.startswith(
+        a::Union{DenseStringViewAndSub,StringAndSub},
+        b::DenseStringViewAndSub
+    )
+    _startswith(a, b)
+end
+
+function Base.startswith(
+        a::DenseStringViewAndSub,
+        b::Union{DenseStringViewAndSub,StringAndSub}
+    )
+    _startswith(a, b)
+end
+
+function _startswith(a, b)
     cub = ncodeunits(b)
     if ncodeunits(a) < cub
         false
@@ -12,8 +25,21 @@ function Base.startswith(a::Union{DenseStringViewAndSub,StringAndSub},
     end
 end
 
-function Base.endswith(a::Union{DenseStringViewAndSub,StringAndSub},
-                       b::Union{DenseStringViewAndSub,StringAndSub})
+function Base.endswith(
+        a::Union{DenseStringViewAndSub,StringAndSub},
+        b::DenseStringViewAndSub
+    )
+    _endswith(a, b)
+end
+
+function Base.endswith(
+        a::DenseStringViewAndSub,
+        b::Union{DenseStringViewAndSub,StringAndSub}
+    )
+    _endswith(a, b)
+end
+
+function _endswith(a, b)
     cub = ncodeunits(b)
     astart = ncodeunits(a) - ncodeunits(b) + 1
     if astart < 1

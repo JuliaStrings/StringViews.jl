@@ -1,4 +1,5 @@
-using StringViews, Test
+using Test
+using StringViews: StringViews, StringView, SVRegexMatch
 
 b = Vector{UInt8}("foobar")
 s = StringView(b)
@@ -127,7 +128,10 @@ end
     for str in (s, ss, abc)
         sS, n = String(str), lastindex(str)
         @test startswith(str, "foo") == startswith(sS, "foo")
+        @test startswith("foobarz", str) == startswith("foobarz", sS)
+        @test startswith("foo", str) == startswith("foo", sS)
         @test endswith(str, "bar") == endswith(sS, "bar")
+        @test endswith("abcfoobar", str) == endswith("abcfoobar", sS)
         @test replace(str, 'o'=>"xy") == replace(sS, 'o'=>"xy")
         @test replace(str, ('o','a')=>'x') == replace(sS, ('o','a')=>'x')
         @test findnext(==('b'), str, 1) === findnext(==('b'), sS, 1)
