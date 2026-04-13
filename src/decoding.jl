@@ -68,7 +68,7 @@ end
 Base.getindex(s::StringView, r::UnitRange{<:Integer}) = s[Int(first(r)):Int(last(r))]
 
 @inline function Base.getindex(s::StringView, r::UnitRange{Int})
-    isempty(r) && return ""
+    isempty(r) && return StringView(s.data[1:0])
     i, j = first(r), last(r)
     @boundscheck begin
         checkbounds(s, r)
@@ -76,7 +76,7 @@ Base.getindex(s::StringView, r::UnitRange{<:Integer}) = s[Int(first(r)):Int(last
         @inbounds isvalid(s, j) || Base.string_index_err(s, j)
     end
     j = nextind(s, j) - 1
-    return StringView(@view s.data[i:j])
+    return StringView(s.data[i:j])
 end
 
 Base.length(s::StringView) = length_continued(s, 1, ncodeunits(s), ncodeunits(s))
