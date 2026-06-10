@@ -6,11 +6,11 @@ s = StringView(b)
 ss = SubString(s, 2, 5) # "ooba"
 abc = StringView(0x61:0x63)
 invalid = StringView([0x8b, 0x52, 0x9b, 0x8d])
-su = StringView("föôẞαr")
+stringview(s::String) = StringView(codeunits(s)) # convenience constructor
+su = stringview("föôẞαr")
 
 @testset "construction/conversion" begin
-    @test StringView(s) === s
-    @test Vector{UInt8}(s) === Array{UInt8}(s) === codeunits(s) === b
+    @test Vector{UInt8}(s) == Array{UInt8}(s) == codeunits(s) === b
     @test Vector{UInt8}(StringView(@view b[1:3])) == b[1:3]
     @test codeunits(String(s)) == s.data
     @test Vector{UInt8}(abc) == collect(0x61:0x63)
@@ -21,21 +21,11 @@ su = StringView("föôẞαr")
     @test c == "foobar"
     @test c.data !== s.data
 
-    buf = IOBuffer()
-    write(buf, s)
-    @test StringView(buf) == s == StringView(buf, 0x01:0x06)
-    @test StringView(buf, 3:5) == "oba" == StringView(buf, 0x03:0x01:0x05)
-    write(buf, "baz")
-    @test StringView(buf) == s * "baz"
-    @test String(take!(buf)) == s * "baz"
-    @test StringView(buf) == ""
-    @test_throws BoundsError StringView(buf, 3:4)
-
-    @test StringView("foo") isa StringView{Base.CodeUnits{UInt8,String}}
+    @test stringview("foo") isa StringView{Base.CodeUnits{UInt8,String}}
 
     @test s isa StringViews.DenseStringView
     @test StringView(@view b[1:3]) isa StringViews.DenseStringView
-    @test StringView("foo") isa StringViews.DenseStringView
+    @test stringview("foo") isa StringViews.DenseStringView
     @test StringView(@view codeunits("foobar")[1:3]) isa StringViews.DenseStringView
 
     @test pointer(s) == pointer(b) == Base.unsafe_convert(Ptr{UInt8}, s)
@@ -63,8 +53,8 @@ end
 
     @test Base.print_to_string(ss) == "ooba"
 
-    @test cmp("foobar","bar") == cmp(ss,"bar") == -cmp("bar",ss) == cmp(ss,StringView("bar"))
-    @test ss == StringView("ooba") == "ooba" == ss == "ooba"
+    @test cmp("foobar","bar") == cmp(ss,"bar") == -cmp("bar",ss) == cmp(ss,stringview("bar"))
+    @test ss == stringview("ooba") == "ooba" == ss == "ooba"
     @test isvalid(ss)
 end
 
@@ -94,17 +84,17 @@ end
     @test findnext(r"[aeiou]+", s, 1) == 2:3
     @test findnext(r"[aeiou]+", ss, 1) == 1:2
 
-    sv = StringView(codeunits("foo 1234 bar"))
+    sv = stringview("foo 1234 bar")
     @test match(r"[0-9]+", sv).match.string === sv
     @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
 
     # Regex match of substring of stringview
-    strv = only(match(r"^([a-z]+)$", SubString(StringView((b"abc")))))
+    strv = only(match(r"^([a-z]+)$", SubString(StringView(b"abc"))))
     @test typeof(strv) == SubString{StringView{typeof(b"abc")}}
 end
 
 @testset "named subpatterns" begin
-    m = match(r"(?<a>.)(.)(?<b>.)", StringView(codeunits("xyz")))
+    m = match(r"(?<a>.)(.)(?<b>.)", stringview("xyz"))
     @test haskey(m, :a)
     @test haskey(m, 2)
     @test haskey(m, "b")
@@ -118,7 +108,7 @@ end
 @testset "parsing" begin
     for val in (true, 1234, 1234.5, 1234.5f0, 4.5+3.25im)
         sval = string(val)
-        for str in (StringView(sval), SubString("foo"*sval*"bar", 4, 3+length(sval)))
+        for str in (stringview(sval), SubString("foo"*sval*"bar", 4, 3+length(sval)))
             @test parse(typeof(val), str) === val
         end
     end
@@ -139,7 +129,7 @@ end
         @test findnext(==("ba"), str, 1) === findnext(==("ba"), sS, 1)
         @test findprev(==("ba"), str, n) === findprev(==("ba"), sS, n)
     end
-    @test chomp(StringView("foo\n")) == "foo"
+    @test chomp(stringview("foo\n")) == "foo"
 
     # issue #5
     let v = [0x32, 0x30, 0x32, 0x31, 0x2d, 0x31, 0x31, 0x2d, 0x31, 0x30, 0x20, 0x32, 0x31, 0x3a, 0x34, 0x32, 0x3a, 0x30, 0x35, 0x2e, 0x31, 0x31, 0x35, 0x38, 0x30, 0x37],
@@ -147,10 +137,10 @@ end
         @test replace(String(copy(v)), pat) == replace(StringView(v), pat)
     end
 
-    @test findfirst(==('ø'), StringView("abc")) === nothing
-    @test findfirst(==('ø'), StringView("abæø")) == 5
-    @test findlast(==('ø'), StringView("abc")) === nothing
-    @test findlast(==('ø'), StringView("abæø")) == 5
+    @test findfirst(==('ø'), stringview("abc")) === nothing
+    @test findfirst(==('ø'), stringview("abæø")) == 5
+    @test findlast(==('ø'), stringview("abc")) === nothing
+    @test findlast(==('ø'), stringview("abæø")) == 5
 end
 
 @testset "replace" begin
@@ -164,8 +154,8 @@ end
 end
 
 @testset "miscellaneous" begin
-    @test cmp("foobar","bar") == cmp(s,"bar") == -cmp("bar",s) == cmp(s,StringView("bar"))
-    @test s == StringView("foobar") == "foobar" == s == "foobar" != StringView("bar")
+    @test cmp("foobar","bar") == cmp(s,"bar") == -cmp("bar",s) == cmp(s,stringview("bar"))
+    @test s == stringview("foobar") == "foobar" == s == "foobar" != stringview("bar")
     @test cmp(abc, "bar") == cmp("abc","bar")
 
     @test Base.typemin(s) isa StringView{Vector{UInt8}}
@@ -176,7 +166,7 @@ end
     @test oneunit(su) == oneunit(typeof(su)) == one(su) == ""
 
     @test isascii(s)
-    @test !isascii(StringView("fööbār"))
+    @test !isascii(stringview("fööbār"))
 
     @test isvalid(s)
     @test isvalid(abc)
@@ -188,5 +178,5 @@ end
     end
 
     # issue #12
-    @test_throws StringIndexError StringView(codeunits("fooα"))[1:5]
+    @test_throws StringIndexError stringview("fooα")[1:5]
 end

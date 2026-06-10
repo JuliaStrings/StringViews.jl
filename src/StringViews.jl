@@ -8,8 +8,20 @@ Unlike Julia's built-in `String` type (which also wraps UTF-8 data), the
 instance, and does not take "ownership" of or modify the array.   Otherwise,
 a `StringView` is intended to be usable in any context where you might
 have otherwise used `String`.
+
+In Julia 1.14, the `StringView` type will be included in the Julia `Base` module,
+at which point the `StringViews` module will become a trivial stub.
 """
 module StringViews
+
+# no longer needed after https://github.com/JuliaLang/julia/pull/60526
+if isdefined(Base, :StringView)
+
+const SVRegexMatch = RegexMatch
+export SVRegexMatch
+
+else
+
 export StringView, SVRegexMatch
 
 """
@@ -27,6 +39,20 @@ in the buffer.
 """
 struct StringView{T<:AbstractVector{UInt8}} <: AbstractString
     data::T
+
+    function StringView{T}(data::T) where {T <: AbstractVector{UInt8}}
+        # For now, StringViews code assumes one-based indexing
+        Base.require_one_based_indexing(data)
+
+        # Prevent someone constructing e.g. a `StringView{AbstractVector{UInt8}}`,
+        # the existence of which will complicate the implementation and provide
+        # no usability benefit.
+        if !isconcretetype(T)
+            throw(ArgumentError("StringView must be parameterized with a concrete type"))
+        end
+
+        new{T}(data)
+    end
 end
 
 const DenseStringView = StringView{<:Union{DenseVector{UInt8},<:Base.FastContiguousSubArray{UInt8,1,<:DenseVector{UInt8}}}}
@@ -34,20 +60,10 @@ const StringAndSub = Union{String,SubString{String}}
 const StringViewAndSub = Union{StringView,SubString{<:StringView}}
 const DenseStringViewAndSub = Union{DenseStringView,SubString{<:DenseStringView}}
 
-Base.Vector{UInt8}(s::StringView{Vector{UInt8}}) = s.data
+StringView(v::AbstractVector{UInt8}) = StringView{typeof(v)}(v)
 Base.Vector{UInt8}(s::StringViewAndSub) = Vector{UInt8}(codeunits(s))
 Base.Array{UInt8}(s::StringViewAndSub) = Vector{UInt8}(s)
 Base.String(s::StringViewAndSub) = String(copyto!(Base.StringVector(ncodeunits(s)), codeunits(s)))
-StringView(s::StringView) = s
-StringView{S}(s::StringView{S}) where {S<:AbstractVector{UInt8}} = s
-StringView(s::String) = StringView(codeunits(s))
-
-# iobuffer constructor (note that buf.data is always 1-based)
-@inline function StringView(buf::IOBuffer, r::OrdinalRange{<:Integer,<:Integer}=Base.OneTo(buf.ptr-1))
-    @boundscheck issubset(r, Base.OneTo(buf.size)) || throw(BoundsError(buf, r))
-    StringView(@view buf.data[r])
-end
-
 Base.copy(s::StringView) = StringView(copy(s.data))
 
 Base.Symbol(s::DenseStringViewAndSub) =
@@ -88,9 +104,10 @@ end
 Base.:(==)(s1::StringViewAndSub, s2::StringAndSub) = s2 == s1
 
 Base.typemin(::Type{StringView{Vector{UInt8}}}) = StringView(Vector{UInt8}(undef,0))
-Base.typemin(::Type{StringView{Base.CodeUnits{UInt8, String}}}) = StringView("")
+Base.typemin(::Type{StringView{Base.CodeUnits{UInt8, String}}}) = StringView(codeunits(""))
 Base.typemin(::T) where {T<:StringView} = typemin(T)
 Base.one(::Union{T,Type{T}}) where {T<:StringView} = typemin(T)
+Base.oneunit(::Union{T, Type{T}}) where {T<:StringView} = typemin(T)
 
 if VERSION < v"1.10.0-DEV.1007" # JuliaLang/julia#47880
     Base.isvalid(s::DenseStringViewAndSub) = ccall(:u8_isvalid, Int32, (Ptr{UInt8}, Int), s, sizeof(s)) ≠ 0
@@ -140,5 +157,7 @@ include("regex.jl")
 include("parse.jl")
 include("util.jl")
 include("search.jl")
+
+end
 
 end # module
