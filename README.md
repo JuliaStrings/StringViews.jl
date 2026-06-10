@@ -6,6 +6,8 @@ This Julia package implements a new type of `AbstractString`, a `StringView`,
 that provides a string representation of any underlying array of bytes
 (any `AbstractVector{UInt8}`), interpreted as UTF-8 encoded Unicode data.
 
+**Merged into Julia 1.14**: The `StringView` type has been [merged into Julia 1.14](https://github.com/JuliaLang/julia/pull/60526).  The StringViews package (version 2.0) is mostly forwards-compatible with `Base.StringView`, and becomes a simple wrapper around the latter if you have Julia 1.14 or later installed.
+
 Unlike Julia's built-in `String` type (which also wraps UTF-8 data), the
 `StringView` type is a copy-free wrap of *any* `AbstractVector{UInt8}`
 instance, and does not take "ownership" of or modify the array.
@@ -36,25 +38,6 @@ julia> StringView(@view b[1:3]) # also works for subarrays, with no copy
 
 julia> abc = StringView(0x61:0x63) # and for other array types
 "abc"
-```
-
-Or, with an `IOBuffer`:
-
-```jl
-julia> buf = IOBuffer();
-
-julia> write(buf, b);
-
-julia> print(buf, "baz")
-
-julia> StringView(buf) # does not modify buf
-"foobarbaz"
-
-julia> String(take!(buf)) # clears buf
-"foobarbaz"
-
-julia> StringView(buf) # now empty
-""
 ```
 
 Other optimized (copy-free) operations include I/O, hashing, iteration/indexing,
