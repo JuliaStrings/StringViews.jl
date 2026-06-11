@@ -93,7 +93,7 @@ end
 
     sv = stringview("foo 1234 bar")
     @test match(r"[0-9]+", sv).match.string === sv
-    @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
+    @test eltype(eachmatch(r"[0-9]+", sv)) <: SVRegexMatch
 
     # Regex match of substring of stringview
     strv = only(match(r"^([a-z]+)$", SubString(StringView(b"abc"))))
@@ -107,7 +107,7 @@ end
     @test haskey(m, "b")
     @test !haskey(m, "foo")
     @test (m[:a], m[2], m["b"]) == ("x", "y", "z")
-    @test sprint(show, m) == "SVRegexMatch(\"xyz\", a=\"x\", 2=\"y\", b=\"z\")"
+    @test sprint(show, m) == "$SVRegexMatch(\"xyz\", a=\"x\", 2=\"y\", b=\"z\")"
     @test keys(m) == ["a", 2, "b"]
 end
 
