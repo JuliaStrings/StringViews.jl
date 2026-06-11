@@ -1,6 +1,13 @@
 using Test
 using StringViews: StringViews, StringView, SVRegexMatch
 
+# DenseStringView is not public, used only for tests
+if isdefined(Base, :DenseStringView)
+    using Base: DenseStringView
+else
+    using StringViews: DenseStringView
+end
+
 b = Vector{UInt8}("foobar")
 s = StringView(b)
 ss = SubString(s, 2, 5) # "ooba"
@@ -23,10 +30,10 @@ su = stringview("föôẞαr")
 
     @test stringview("foo") isa StringView{Base.CodeUnits{UInt8,String}}
 
-    @test s isa StringViews.DenseStringView
-    @test StringView(@view b[1:3]) isa StringViews.DenseStringView
-    @test stringview("foo") isa StringViews.DenseStringView
-    @test StringView(@view codeunits("foobar")[1:3]) isa StringViews.DenseStringView
+    @test s isa DenseStringView
+    @test StringView(@view b[1:3]) isa DenseStringView
+    @test stringview("foo") isa DenseStringView
+    @test StringView(@view codeunits("foobar")[1:3]) isa DenseStringView
 
     @test pointer(s) == pointer(b) == Base.unsafe_convert(Ptr{UInt8}, s)
     @test Base.unsafe_convert(Ptr{Int8}, s) == Ptr{Int8}(pointer(s))
@@ -86,7 +93,7 @@ end
 
     sv = stringview("foo 1234 bar")
     @test match(r"[0-9]+", sv).match.string === sv
-    @test eltype(eachmatch(r"[0-9]+", sv)) == SVRegexMatch{typeof(sv)}
+    @test eltype(eachmatch(r"[0-9]+", sv)) <: SVRegexMatch
 
     # Regex match of substring of stringview
     strv = only(match(r"^([a-z]+)$", SubString(StringView(b"abc"))))
@@ -100,7 +107,7 @@ end
     @test haskey(m, "b")
     @test !haskey(m, "foo")
     @test (m[:a], m[2], m["b"]) == ("x", "y", "z")
-    @test sprint(show, m) == "SVRegexMatch(\"xyz\", a=\"x\", 2=\"y\", b=\"z\")"
+    @test sprint(show, m) == "$SVRegexMatch(\"xyz\", a=\"x\", 2=\"y\", b=\"z\")"
     @test keys(m) == ["a", 2, "b"]
 end
 
