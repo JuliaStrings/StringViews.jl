@@ -1,6 +1,13 @@
 using Test
 using StringViews: StringViews, StringView, SVRegexMatch
 
+# DenseStringView is not public, used only for tests
+if isdefined(Base, :DenseStringView)
+    using Base: DenseStringView
+else
+    using StringViews: DenseStringView
+end
+
 b = Vector{UInt8}("foobar")
 s = StringView(b)
 ss = SubString(s, 2, 5) # "ooba"
@@ -23,10 +30,10 @@ su = stringview("föôẞαr")
 
     @test stringview("foo") isa StringView{Base.CodeUnits{UInt8,String}}
 
-    @test s isa StringViews.DenseStringView
-    @test StringView(@view b[1:3]) isa StringViews.DenseStringView
-    @test stringview("foo") isa StringViews.DenseStringView
-    @test StringView(@view codeunits("foobar")[1:3]) isa StringViews.DenseStringView
+    @test s isa DenseStringView
+    @test StringView(@view b[1:3]) isa DenseStringView
+    @test stringview("foo") isa DenseStringView
+    @test StringView(@view codeunits("foobar")[1:3]) isa DenseStringView
 
     @test pointer(s) == pointer(b) == Base.unsafe_convert(Ptr{UInt8}, s)
     @test Base.unsafe_convert(Ptr{Int8}, s) == Ptr{Int8}(pointer(s))
